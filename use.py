@@ -15,6 +15,8 @@ parser.add_argument("--o-fname", default=None,
                     help="Filename that will contain the output. Default: [i_bname]_with_links.html, where [i_bname] equals --i-fname basename if --i-fname is defined otherwise 'txt'.")
 parser.add_argument("--wikipedia-link", action="store_true", default=False,
                     help="Enrich output with links to Named Entities Wikipedia page.")
+parser.add_argument("--use-spacy", action="store_true", default=False,
+                    help="Use spaCy library to recognize named entities.")
 args = parser.parse_args()
 
 assert (args.i != None) ^ (args.i_fname != None), "Exactly one input type must be defined."
@@ -31,24 +33,24 @@ elif args.i_fname:
 
 # Recognize named entities
 
-## TODO:
-## TODO: reconnaître seulement les bonnes catégories
+if args.use_spacy:
+    import spacy
+    nlp = spacy.load("en_core_web_sm")
 
-import spacy
-from spacy import displacy
-nlp = spacy.load('en_core_web_sm')
-
-ents = nlp(txt).ents
-glose_ents = []
-for ent in ents:
-    if ent.label_ == "PERSON":
-        label = "PER"
-    elif ent.label_ in ["ORG", "LOC"]:
-        label = ent.label_
-    else:
-        label = "MISC"
-    glose_ent = GloseEntity(ent.text, ent.start_char, ent.end_char, label)
-    glose_ents.append(glose_ent)
+    ents = nlp(txt).ents
+    glose_ents = []
+    for ent in ents:
+        if ent.label_ == "PERSON":
+            label = "PER"
+        elif ent.label_ in ["ORG", "LOC"]:
+            label = ent.label_
+        else:
+            label = "MISC"
+        glose_ent = GloseEntity(ent.text, ent.start_char, ent.end_char, label)
+        glose_ents.append(glose_ent)
+else:
+    pass
+    # TODO:
 
 # Add Wikipedia links to non-misc entities if asked
 
