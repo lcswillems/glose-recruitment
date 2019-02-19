@@ -6,7 +6,7 @@ It takes as input a text:
 
 <img src="README-rsrc/text.png">
 
-And outputs an HTML page with the named entities highlighted and links to the corresponding Wikipedia pages:
+And outputs an HTML page with the named entities highlighted and the links to the corresponding Wikipedia pages:
 
 <img src="README-rsrc/text_with_NE_and_links.png">
 
