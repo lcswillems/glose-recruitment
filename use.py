@@ -59,7 +59,7 @@ elif args.model != None:
 
     model_path = get_model_path(args.model)
     model = load_model(model_path)
-    pred_label_id_sents = model.predict(casing_id_sents).argmax(axis=2)
+    pred_label_id_sents = model.predict([lword_id_sents, casing_id_sents]).argmax(axis=2)
 
     # Create entities from model predictions
 

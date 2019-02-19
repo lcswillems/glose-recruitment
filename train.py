@@ -1,7 +1,7 @@
 import argparse
 import os
-from keras.models import load_model, Sequential
-from keras.layers import Dense, LSTM, Embedding, Bidirectional
+from keras.models import load_model, Model
+from keras.layers import Input, Dense, LSTM, Embedding, Bidirectional, concatenate
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 
@@ -29,11 +29,11 @@ valid_lword_id_sents, valid_casing_id_sents, valid_label_hot_sents = preprocess_
 # Define model architecture parameters
 
 lword_embedding_input_dim = len(load_vocab()) + 2
-lword_embedding_output_dim = 64
+lword_embedding_output_dim = 16
 casing_embedding_input_dim = len(casing_to_id) + 1
 casing_embedding_output_dim = 8
 
-lstm_output_dim = 16
+lstm_output_dim = 2*(lword_embedding_output_dim + casing_embedding_output_dim)
 
 nb_labels = len(label_to_hot)
 
@@ -44,13 +44,21 @@ model_path = get_model_path(args.model)
 if os.path.exists(model_path):
     model = load_model(model_path)
 else:
-    model = Sequential()
-    model.add(Embedding(input_dim=casing_embedding_input_dim,
-                        output_dim=casing_embedding_output_dim,
-                        mask_zero=True))
-    model.add(Bidirectional(LSTM(lstm_output_dim, return_sequences=True)))
-    model.add(Dense(nb_labels, activation="softmax"))
+    lword_input = Input(shape=(None,))
+    lword_embedding = Embedding(input_dim=lword_embedding_input_dim,
+                                output_dim=lword_embedding_output_dim,
+                                mask_zero=True)(lword_input)
 
+    casing_input = Input(shape=(None,))
+    casing_embedding = Embedding(input_dim=casing_embedding_input_dim,
+                                 output_dim=casing_embedding_output_dim,
+                                 mask_zero=True)(casing_input)
+
+    merged = concatenate([lword_embedding, casing_embedding])
+    bidirectional = Bidirectional(LSTM(lstm_output_dim, return_sequences=True))(merged)
+    output = Dense(nb_labels, activation="softmax")(bidirectional)
+
+    model = Model(inputs=[lword_input, casing_input], outputs=output)
     model.compile(loss="categorical_crossentropy", optimizer=Adam(lr=args.lr), metrics=["acc"])
 
 model.summary()
@@ -60,7 +68,7 @@ model.summary()
 f1_callback = F1Metrics()
 model_callback = ModelCheckpoint(model_path, save_best_only=True)
 
-model.fit(train_casing_id_sents, train_label_hot_sents,
+model.fit([train_lword_id_sents, train_casing_id_sents], train_label_hot_sents,
           epochs=args.epochs, batch_size=args.bs, verbose=1,
-          validation_data=(valid_casing_id_sents, valid_label_hot_sents),
+          validation_data=([valid_lword_id_sents, valid_casing_id_sents], valid_label_hot_sents),
           callbacks=[model_callback, f1_callback])
