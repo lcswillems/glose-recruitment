@@ -19,13 +19,13 @@ The named entities are distributed among 4 classes: `PER` for "person", `LOC` fo
 You need to install the required libraries by executing the following command:
 
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 When the model will be trained, you might want to compare it to the NER in the library spaCy. Hence, you need to download the latter with:
 
 ```
-python -m spacy download en_core_web_sm
+python3 -m spacy download en_core_web_sm
 ```
 
 ### Building the vocabulary
