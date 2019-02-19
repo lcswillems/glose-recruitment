@@ -135,6 +135,8 @@ output += text[text_pos:]
 
 output += "</div>"
 
+output = output.replace("\n\n", "<br><br>")
+
 # Save output
 
 if args.o_fname != None:
