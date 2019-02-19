@@ -13,7 +13,7 @@ from preprocess import preprocess_conll_dataset, casing_to_id, label_to_hot
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", required=True,
                     help="Model name")
-parser.add_argument("--lr", type=float, default=0.001,
+parser.add_argument("--lr", type=float, default=0.01,
                     help="Learning rate")
 parser.add_argument("--epochs", type=int, default=1,
                     help="Number of epochs")
